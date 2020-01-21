@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Journal</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+</head>
+<body>
+<div id="app-6">
+  <h1>Simple Journal</h1>
+  <p class="message">{{ message }}</p>
+  <p class="quote">{{ quote }}</p>
+
+  <h2>Today's Goals</h2>
+  <goal-item
+    v-for="goal in goals"
+    v-bind:text="goal.text"
+    v-bind:key="goal.text">
+  </goal-item>
+
+  <h2>Notes</h2>
+  <ul>
+    <li v-for="note in notes">{{ note }}</li>
+    <li><input type="text" v-model="noteInput"> </li>
+  </ul>
+
+  <h2>Learnings</h2>
+
+  <h2>Challenges</h2>
+  <div class="challenge-form">
+    <form method="post" action="/whoops">
+      <input v-model="challengeSituation">
+      <input v-model="challengeAction">
+      <input v-model="challengeResult">
+      <button>Add</button>
+    </form>
+  </div>
+
+  <h2>For Tomorrow</h2>
+  <ul>
+    <tomorrow-item
+        v-for="t in tomorrows"
+        v-bind:text="t"
+        v-bind:key="t">
+    </tomorrow-item>
+  </ul>
+  <div class="tomorrow-form">
+    <input v-model="tomorrowInput">
+    <button v-on:click="addTomorrow">Add</button>
+  </div>
+
+  <button>Save</button>
+
+  <hr>
+
+  <h2>History</h2>
+  <div v-for="j in journals">
+    <h3>{{ message }}</h3>
+    <h4>Goals</h4>
+    <ul v-for="g in j.goals">
+      <li>{{ g.text }} ({{ g.complete ? 'completed' : 'incomplete'}})</li>
+    </ul>
+    <h4>Notes</h4>
+
+    <h4>Learnings</h4>
+
+    <h4>Challenges</h4>
+    <ul v-for="c in j.challenges">
+      <div>
+        {{ c.situation }}; {{ c.action }}; {{ c.result }}
+      </div>
+    </ul>
+
+    <h4>For Tomorrow</h4>
+  </div>
+</div>
+
+<script>
+
+
+Vue.component('goal-item', {
+  props: [ 'text' ],
+  template: '<div><input type="checkbox">{{ text }}</input></div>'
+});
+
+Vue.component('tomorrow-item', {
+  props: [ 'text' ],
+  template: '<li>{{ text }}</li>'
+});
+
+Vue.component('history-item', {
+  props: [ 'message' ],
+  template: `
+  <div>
+    <h3>{{ message }}<h3>
+    <goal
+  </div>
+`
+});
+
+var app6 = new Vue({
+  el: '#app-6',
+  methods: {
+    addTomorrow: function(event) {
+      this.tomorrows.push(this.tomorrowInput);
+    }
+  },
+  data: {
+    message: 'Journal for ' + new Date().toLocaleDateString(),
+    quote: 'Loading quote of the day',
+    challengeSituation: 'Situation!',
+    challengeAction: 'Action!',
+    challengeResult: 'Result??',
+    tomorrowInput: '',
+    tomorrows: [ 'here' ],
+    notes: [],
+    noteInput: '',
+    goals: [],
+    journals: [{ message: 'here'}]
+  },
+  mounted () {
+    axios
+      .get('/journals')
+      .then(response => {
+        //this.history.push();
+        this.journals = response.data;
+      })
+      .catch(error => {
+        console.log(error);
+      });
+
+    /*axios
+      .get('https://quotes.rest/qod')
+      .then(response => {
+        this.quote = response.data.contents.quotes[0].quote;
+      })
+      .catch(error => {
+        console.log(error);
+      });*/
+  }
+})
+</script>
+
+</body>
+</html>
